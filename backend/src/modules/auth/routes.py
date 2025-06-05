@@ -11,7 +11,14 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register", response_model=UserInDB)
 def register(user: UserCreate, auth_service: AuthService = Depends()):
-    return auth_service.create_user(user)
+    try:
+        db_user = auth_service.create_user(user)
+        return db_user
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
 
 @router.post("/token", response_model=Token)
 def login_for_access_token(

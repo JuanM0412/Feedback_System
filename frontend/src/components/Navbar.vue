@@ -1,34 +1,67 @@
-<template>  
-  <nav class="bg-white dark:bg-gray-900 fixed w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600">
-    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-      <a href="https://flowbite.com/" class="flex items-center space-x-3 rtl:space-x-reverse">
-          <img src="https://flowbite.com/docs/images/logo.svg" class="h-8" alt="Logo">
-          <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">FeedBack System</span>
-      </a>
-      <div class="flex md:order-2 gap-3 rtl:gap-reverse">
-          <button type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-            Iniciar Sesión
-          </button>
-          <button type="button" class="text-blue-700 bg-white hover:bg-gray-100 border border-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-gray-900 dark:text-blue-500 dark:border-blue-500 dark:hover:bg-gray-800 dark:hover:text-white dark:focus:ring-blue-800">
-            Registrarse
-          </button>
-      </div>
-      <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-sticky">
-        <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-          <li>
-            <a href="#" class="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500" aria-current="page">Página Principal</a>
-          </li>
-          <li>
-            <a href="#" class="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Acerca de Nosotros</a>
-          </li>
-          <li>
-            <a href="#" class="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Servicios</a>
-          </li>
-          <li>
-            <a href="#" class="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Contacto</a>
-          </li>
-        </ul>
+<template>
+  <nav class="bg-white dark:bg-gray-900 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <router-link to="/" class="text-xl font-bold text-blue-600 dark:text-blue-400">
+            SalesAnalyzer
+          </router-link>
+        </div>
+        
+        <div class="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
+          <template v-if="isAuthenticated">
+            <router-link 
+              to="/rubrica" 
+              class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400"
+              active-class="bg-blue-100 dark:bg-blue-800"
+            >
+              Rúbrica
+            </router-link>
+            <router-link 
+              to="/business" 
+              class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400"
+              active-class="bg-blue-100 dark:bg-blue-800"
+            >
+              Negocio
+            </router-link>
+            <button 
+              @click="handleLogout"
+              class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400"
+            >
+              Cerrar Sesión
+            </button>
+          </template>
+          <template v-else>
+            <router-link 
+              to="/login" 
+              class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400"
+            >
+              Iniciar Sesión
+            </router-link>
+            <router-link 
+              to="/register" 
+              class="px-3 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+            >
+              Registrarse
+            </router-link>
+          </template>
+        </div>
       </div>
     </div>
   </nav>
 </template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useAuth } from '../services/AuthService';
+import axios from 'axios';
+
+const { user, logout, refreshUser } = useAuth();
+
+const isAuthenticated = computed(() => !!user.value);
+
+const handleLogout = async () => {
+  await logout();
+  window.location.reload();
+};
+</script>
