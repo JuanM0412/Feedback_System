@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.responses import JSONResponse
 
 from src.models.user import User
 from src.modules.auth.schemas import UserCreate, UserInDB, UserUpdate, Token
@@ -9,11 +10,26 @@ from src.core.database import get_db
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-@router.post("/register", response_model=UserInDB)
+@router.post("/register")
 def register(user: UserCreate, auth_service: AuthService = Depends()):
     try:
         db_user = auth_service.create_user(user)
-        return db_user
+        access_token = auth_service.create_access_token_for_user(db_user)
+        refresh_token = auth_service.create_refresh_token_for_user(db_user)
+
+        return JSONResponse(
+            status_code=201,
+            content={
+                "status": "success",
+                "message": "User registered successfully",
+                "data": {
+                    "access_token": access_token,
+                    "refresh_token": refresh_token,
+                    "token_type": "bearer",
+                    "user": db_user.dict()
+                }
+            }
+        )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

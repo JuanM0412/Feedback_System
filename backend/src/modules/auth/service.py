@@ -56,6 +56,12 @@ class AuthService:
             data={"sub": user.email}, expires_delta=access_token_expires
         )
         return access_token
+    
+    def create_refresh_token_for_user(self, user: User):
+        refresh_token_expires = timedelta(days=settings.REFRESH_TOKEN_FOR_USER)
+        return create_access_token(
+            data={"sub": user.email}, expires_delta=refresh_token_expires
+        )
 
     def update_user(self, user_id: int, user_update: UserUpdate) -> Optional[UserInDB]:
         db_user = self.db.query(User).filter(User.id == user_id).first()
