@@ -1,29 +1,16 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Request
 from fastapi.responses import JSONResponse
+from src.models.user import User
 from src.modules.analysis.service import AnalysyssService
+from src.modules.auth.dependencies import get_current_user
 
 router = APIRouter(prefix="/analysis", tags=["analysis"])
 
 @router.post("/upload_audio/")
-async def upload_audio(file: UploadFile = File(...), analysis_service: AnalysyssService = Depends()):
+async def upload_audio(request: Request, file: UploadFile = File(...), analysis_service: AnalysyssService = Depends(), current_user: User = Depends(get_current_user)):
     try:
         result = await analysis_service.handle_audio_upload(file)
-        result["rubric_evaluation"] = [
-            {
-                "criterio": "Cantidad de preguntas realizadas",
-                "mínimo": 5
-            },
-            {
-                "criterio": "Tono amigable",
-                "escala": "1-10"
-            },
-            {
-                "criterio": "Claridad en las respuestas",
-                "escala": "1-10"
-            }
-        ]
-        result["business_description"] = "Financiamiento"
-        await analysis_service.trigger_webhook(result)
+        await analysis_service.trigger_webhook(result, current_user)
         return JSONResponse(content={
             "message": "Archivo subido exitosamente",
             **result

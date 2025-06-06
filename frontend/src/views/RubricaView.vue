@@ -1,5 +1,5 @@
 <template>
-  <main class="flex-grow w-full py-8 px-4 md:px-6 lg:px-8">
+  <main class="flex-grow w-full py-8 px-4 md:px-6 lg:px-8 mt-16">
     <div class="max-w-4xl mx-auto">
       <div class="flex justify-between items-center mb-8">
         <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Rúbrica de Evaluación</h1>

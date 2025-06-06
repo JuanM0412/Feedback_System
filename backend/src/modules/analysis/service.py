@@ -2,6 +2,7 @@ import tempfile, os
 from fastapi import UploadFile
 from src.utils.google_drive import upload_file_to_drive
 from src.core.config import settings
+from src.models.user import User
 import httpx
 
 class AnalysyssService:
@@ -35,7 +36,9 @@ class AnalysyssService:
             if tmp_path and os.path.exists(tmp_path):
                 os.unlink(tmp_path)
 
-    async def trigger_webhook(self, data: dict) -> None:
+    async def trigger_webhook(self, data: dict, user: User) -> None:
+        data["evaluation_rubric"] = user.evaluation_rubric
+        data["business_description"] = user.business_summary
         print("Data to send to webhook:", data)
         async with httpx.AsyncClient() as client:
             try:

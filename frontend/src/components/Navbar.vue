@@ -1,19 +1,17 @@
 <template>
   <nav class="bg-white dark:bg-gray-900 fixed w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-      <!-- Logo -->
       <router-link to="/" class="flex items-center space-x-3 rtl:space-x-reverse">
         <img src="https://flowbite.com/docs/images/logo.svg" class="h-8" alt="Logo" />
         <span class="self-center text-2xl font-semibold whitespace-nowrap text-gray-900 dark:text-white">SalesAnalyzer</span>
       </router-link>
 
-      <!-- Botones autenticación (versión escritorio) -->
       <div class="hidden md:flex md:order-2 gap-3 rtl:gap-reverse">
         <template v-if="isAuthenticated">
           <button
             @click="handleLogout"
             :disabled="loading"
-            class="text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-500 font-medium rounded-lg text-sm px-4 py-2 text-center transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="bg-gradient-to-r from-blue-600 to-blue-800 text-white dark:text-white-300 hover:text-white-700 dark:hover:text-blue-500 font-medium rounded-lg text-sm px-4 py-2 text-center transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span v-if="!loading">Cerrar Sesión</span>
             <span v-else class="flex items-center">
@@ -39,7 +37,6 @@
             Registrarse
           </router-link>
         </template>
-        <!-- Botón menú mobile -->
         <button
           @click="toggleMobileMenu"
           class="md:hidden inline-flex items-center justify-center p-2 text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-600"
@@ -53,7 +50,6 @@
         </button>
       </div>
 
-      <!-- Menú principal -->
       <div :class="['items-center justify-between w-full md:flex md:w-auto md:order-1', showMobileMenu ? 'block' : 'hidden']">
         <ul
           class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700"
@@ -74,6 +70,14 @@
                 active-class="text-blue-700 md:text-blue-700 dark:text-blue-500"
                 @click="closeMobileMenu"
               >Negocio</router-link>
+            </li>
+            <li>
+              <router-link
+                to="/upload_file"
+                class="block py-2 px-3 rounded text-gray-900 hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+                active-class="text-blue-700 md:text-blue-700 dark:text-blue-500"
+                @click="closeMobileMenu"
+              >Analizar Llamada</router-link>
             </li>
           </template>
           <template v-else>
