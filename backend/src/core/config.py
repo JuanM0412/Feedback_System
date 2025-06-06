@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     FOLDER_ID: str
     SERVICE_ACCOUNT_FILE: str
     SCOPES: str
+    MAKE_WEBHOOK_URL: str
 
     class Config:
         env_file = ".env"
