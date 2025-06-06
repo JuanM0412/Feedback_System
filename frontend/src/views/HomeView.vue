@@ -9,14 +9,24 @@
         <p class="text-xl md:text-2xl mb-6 max-w-3xl mx-auto">
           Solución integral para transcribir, analizar y mejorar el desempeño de tus agentes de ventas
         </p>
-        <div class="flex justify-center gap-4 mt-6">
-          <button class="bg-white text-blue-700 hover:bg-gray-100 font-medium rounded-lg px-6 py-3 text-lg">
-            Iniciar Sesión
-          </button>
-          <button class="border-2 border-white text-white hover:bg-white hover:text-blue-700 font-medium rounded-lg px-6 py-3 text-lg">
-            Registrarse
-          </button>
-        </div>
+        <template v-if="isAuthenticated">
+          <router-link
+            to="/upload_file"
+            class="bg-gradient-to-r from-blue-600 to-blue-800 text-white hover:from-blue-700 hover:to-blue-900 font-medium rounded-lg px-6 py-3 text-lg border-2 border-white transition-colors"
+          >
+            Analizar Llamada
+          </router-link>
+        </template>
+        <template v-else>
+          <div class="flex justify-center gap-4 mt-6">
+            <router-link to='/login' class="bg-gradient-to-r from-blue-600 to-blue-800 text-white hover:from-blue-700 hover:to-blue-900 font-medium rounded-lg px-6 py-3 text-lg border-2 border-white transition-colors">
+              Iniciar Sesión
+            </router-link>
+            <router-link to='/register' class="bg-white text-blue-700 border-white hover:bg-gray-100 dark:bg-gray-900 dark:text-blue-500 dark:border-blue-500 dark:hover:bg-gray-800 dark:hover:text-white dark:focus:ring-blue-800 font-medium rounded-lg px-6 py-3 text-lg transition-colors">
+              Registrarse
+            </router-link>
+          </div>
+        </template>
       </div>
     </section>
 
@@ -179,3 +189,10 @@
     </section>
   </main>
 </template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+import { userStore } from '../store/userStore';
+
+const isAuthenticated = computed(() => userStore.isAuthenticated);
+</script>

@@ -77,10 +77,8 @@ export const userStore = {
   },
 
   handleAuthResponse(response: AuthResponse): void {
-
     if (response.data?.user) {
       this.setUser(response.data.user);
-
     }
 
     if (response.data?.access_token && response.data?.refresh_token) {

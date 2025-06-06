@@ -49,7 +49,19 @@ def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = auth_service.create_access_token_for_user(user)
-    return {"access_token": access_token, "token_type": "bearer"}
+    refresh_token = auth_service.create_refresh_token_for_user(user)
+    return JSONResponse(
+            status_code=201,
+            content={
+                "status": "success",
+                "message": "User registered successfully",
+                "data": {
+                    "access_token": access_token,
+                    "refresh_token": refresh_token,
+                    "token_type": "bearer"
+                }
+            }
+        )
 
 @router.get("/me", response_model=UserInDB)
 def read_users_me(current_user: User = Depends(get_current_user)):

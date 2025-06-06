@@ -1,6 +1,6 @@
 <template>
   <Navbar />
-  <router-view class="flex-grow" />
+  <router-view class="flex-grow main-content" />
   <Footer />
 </template>
 

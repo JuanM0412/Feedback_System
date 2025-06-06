@@ -8,3 +8,5 @@ __pycache__/
 # Ignore virtual environments
 venv/
 .env
+
+service_account.json

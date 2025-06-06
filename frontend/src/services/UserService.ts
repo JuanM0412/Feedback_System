@@ -24,17 +24,27 @@ class UserService {
 
   async login(credentials: { email: string; password: string }): Promise<AuthResponse> {
     try {
-      const response = await api.post<AuthResponse>('/auth/token', credentials);
+      const formData = new URLSearchParams();
+      formData.append('username', credentials.email);
+      formData.append('password', credentials.password);
 
-      if (!response.data || !response.data.id) {
-        throw new Error(response.data.message || 'Login failed');
-      }
+      const response = await api.post<AuthResponse>(
+        '/auth/token',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }
+      );
+
+      console.log('Login response:', response);
 
       return response.data;
     } catch (error: unknown) {
       if (isAxiosError(error)) {
         const errorData = error.response?.data as ApiErrorResponse;
-        throw new Error(errorData?.message || 'Error logging in');
+        throw new Error(errorData?.detail || errorData?.message || 'Error logging in');
       }
       throw new Error('Unknown error while logging in');
     }

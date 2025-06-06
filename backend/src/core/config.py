@@ -6,6 +6,10 @@ class Settings(BaseSettings):
     ALGORITHM: str 
     ACCESS_TOKEN_EXPIRE_MINUTES: int 
     REFRESH_TOKEN_FOR_USER: int
+    FOLDER_ID: str
+    SERVICE_ACCOUNT_FILE: str
+    SCOPES: str
+    MAKE_WEBHOOK_URL: str
 
     class Config:
         env_file = ".env"
