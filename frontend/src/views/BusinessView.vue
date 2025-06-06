@@ -1,0 +1,158 @@
+<template>
+  <main class="flex-grow w-full py-8 px-4 md:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+      <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Descripción del Negocio</h1>
+        <button 
+          @click="saveBusiness"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="loading"
+        >
+          <span v-if="!loading">Guardar Cambios</span>
+          <span v-else class="flex items-center">
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Guardando...
+          </span>
+        </button>
+      </div>
+
+      <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
+        <span class="block sm:inline">{{ errorMessage }}</span>
+      </div>
+
+      <div v-if="successMessage" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert">
+        <span class="block sm:inline">{{ successMessage }}</span>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+        <textarea
+          v-model="businessContent"
+          class="w-full h-96 p-4 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-none"
+          placeholder="Describe tu negocio, productos/servicios principales, y público objetivo..."
+          :disabled="loading"
+        ></textarea>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-semibold mb-4 dark:text-white">Ejemplo de Estructura</h2>
+        <pre class="bg-gray-100 dark:bg-gray-700 p-4 rounded-md text-sm text-gray-800 dark:text-gray-300 overflow-x-auto">
+# Descripción del Negocio
+
+**Nombre de la Empresa:** TechSolutions Inc.
+
+**Industria:** Desarrollo de Software B2B
+
+**Productos/Servicios Principales:**
+- Desarrollo de aplicaciones empresariales personalizadas
+- Soluciones de automatización de procesos
+- Consultoría en transformación digital
+
+**Público Objetivo:**
+- Medianas empresas (50-500 empleados)
+- Sectores: manufactura, logística, retail
+- Departamentos de TI y operaciones
+
+**Valor Diferenciador:**
+- Enfoque en integración con sistemas legacy
+- Tiempos de implementación rápidos
+- Soporte técnico 24/7 incluido
+        </pre>
+      </div>
+    </div>
+  </main>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import UserService from '../services/UserService';
+import { userStore } from '../store/userStore';
+
+const router = useRouter();
+
+const businessContent = ref('');
+const loading = ref(false);
+const errorMessage = ref('');
+const successMessage = ref('');
+
+const fetchBusinessInfo = async () => {
+  try {
+    loading.value = true;
+    errorMessage.value = '';
+    
+    const response = await UserService.getBusinessInfo();
+    businessContent.value = response.business_summary || '';
+    
+  } catch (error: unknown) {
+    console.error('Business info error:', error);
+    
+    if (error instanceof Error) {
+      // Si es un error de autenticación, redirigir al login
+      if (error.message.includes('401') || error.message.includes('token') || error.message.includes('unauthorized')) {
+        errorMessage.value = 'Sesión expirada. Redirigiendo al login...';
+        userStore.logout();
+        setTimeout(() => router.push('/login'), 2000);
+      } else {
+        errorMessage.value = error.message || 'Error al cargar la información del negocio';
+      }
+    } else {
+      errorMessage.value = 'Error al cargar la información del negocio';
+    }
+  } finally {
+    loading.value = false;
+  }
+};
+
+const saveBusiness = async () => {
+  try {
+    loading.value = true;
+    errorMessage.value = '';
+    successMessage.value = '';
+    
+    if (!businessContent.value.trim()) {
+      errorMessage.value = 'La descripción del negocio no puede estar vacía';
+      return;
+    }
+
+    await UserService.saveBusinessInfo({
+      business_summary: businessContent.value
+    });
+    
+    successMessage.value = 'Información del negocio guardada exitosamente';
+    
+    // Limpiar el mensaje de éxito después de 3 segundos
+    setTimeout(() => {
+      successMessage.value = '';
+    }, 3000);
+    
+  } catch (error: unknown) {
+    console.error('Save business error:', error);
+    
+    if (error instanceof Error) {
+      if (error.message.includes('401') || error.message.includes('token') || error.message.includes('unauthorized')) {
+        errorMessage.value = 'Sesión expirada. Redirigiendo al login...';
+        userStore.logout();
+        setTimeout(() => router.push('/login'), 2000);
+      } else {
+        errorMessage.value = error.message || 'Error al guardar la información del negocio';
+      }
+    } else {
+      errorMessage.value = 'Error al guardar la información del negocio';
+    }
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  // Verificar si el usuario está autenticado
+  if (!userStore.isAuthenticated) {
+    router.push('/login');
+  } else {
+    fetchBusinessInfo();
+  }
+});
+</script>
