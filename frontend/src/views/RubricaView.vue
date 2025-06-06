@@ -5,12 +5,12 @@
         <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Rúbrica de Evaluación</h1>
         <button 
           @click="saveRubrica"
-          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           :disabled="loading"
         >
           <span v-if="!loading">Guardar Cambios</span>
           <span v-else class="flex items-center">
-            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -19,15 +19,20 @@
         </button>
       </div>
 
-      <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-        {{ error }}
+      <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
+        <span class="block sm:inline">{{ errorMessage }}</span>
+      </div>
+
+      <div v-if="successMessage" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert">
+        <span class="block sm:inline">{{ successMessage }}</span>
       </div>
 
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
         <textarea
           v-model="rubricaContent"
-          class="w-full h-96 p-4 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+          class="w-full h-96 p-4 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-none"
           placeholder="Escribe aquí tu rúbrica de evaluación..."
+          :disabled="loading"
         ></textarea>
       </div>
 
@@ -63,52 +68,91 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useAuth } from '../services/AuthService';
+import { useRouter } from 'vue-router';
+import UserService from '../services/UserService';
+import { userStore } from '../store/userStore';
 
-const { user, refreshUser, error: authError, api } = useAuth(); // Añade api aquí
+const router = useRouter();
+
 const rubricaContent = ref('');
 const loading = ref(false);
-const error = ref('');
+const errorMessage = ref('');
+const successMessage = ref('');
 
 const fetchRubrica = async () => {
   try {
-    const response = await api.get('/auth/me'); // Usa api en lugar de axios
-    if (response.data && response.data.evaluation_rubric) {
-      rubricaContent.value = response.data.evaluation_rubric;
+    loading.value = true;
+    errorMessage.value = '';
+    
+    const response = await UserService.getRubrica();
+    rubricaContent.value = response.evaluation_rubric || '';
+    
+  } catch (error: unknown) {
+    console.error('Rubrica fetch error:', error);
+    
+    if (error instanceof Error) {
+      if (error.message.includes('401') || error.message.includes('token') || error.message.includes('unauthorized')) {
+        errorMessage.value = 'Sesión expirada. Redirigiendo al login...';
+        userStore.logout();
+        setTimeout(() => router.push('/login'), 2000);
+      } else {
+        errorMessage.value = error.message || 'Error al cargar la rúbrica';
+      }
     } else {
-      rubricaContent.value = '';
+      errorMessage.value = 'Error al cargar la rúbrica';
     }
-  } catch (err) {
-    console.error('Error fetching rubrica:', err);
-    error.value = 'No se pudo cargar la rúbrica. Por favor, recarga la página.';
+  } finally {
+    loading.value = false;
   }
 };
 
 const saveRubrica = async () => {
   try {
     loading.value = true;
-    error.value = '';
+    errorMessage.value = '';
+    successMessage.value = '';
     
-    const response = await api.patch('/auth/me', { 
-      evaluation_rubric: rubricaContent.value 
-    }, {
-      validateStatus: (status) => status < 500
-    });
-
-    if (response.status === 200) {
-      await refreshUser();
-    } else {
-      error.value = response.data?.detail || 'Error al guardar los cambios';
+    if (!rubricaContent.value.trim()) {
+      errorMessage.value = 'La rúbrica de evaluación no puede estar vacía';
+      return;
     }
-  } catch (err) {
-    console.error('Error saving rubrica:', err);
-    error.value = 'Error de conexión. Verifica tu red e intenta nuevamente.';
+
+    await UserService.saveRubrica({
+      evaluation_rubric: rubricaContent.value
+    });
+    
+    successMessage.value = 'Rúbrica de evaluación guardada exitosamente';
+    
+    // Limpiar el mensaje de éxito después de 3 segundos
+    setTimeout(() => {
+      successMessage.value = '';
+    }, 3000);
+    
+  } catch (error: unknown) {
+    console.error('Save rubrica error:', error);
+    
+    if (error instanceof Error) {
+      if (error.message.includes('401') || error.message.includes('token') || error.message.includes('unauthorized')) {
+        errorMessage.value = 'Sesión expirada. Redirigiendo al login...';
+        userStore.logout();
+        setTimeout(() => router.push('/login'), 2000);
+      } else {
+        errorMessage.value = error.message || 'Error al guardar la rúbrica';
+      }
+    } else {
+      errorMessage.value = 'Error al guardar la rúbrica';
+    }
   } finally {
     loading.value = false;
   }
 };
 
-onMounted(async () => {
-  await fetchRubrica();
+onMounted(() => {
+  // Verificar si el usuario está autenticado
+  if (!userStore.isAuthenticated) {
+    router.push('/login');
+  } else {
+    fetchRubrica();
+  }
 });
 </script>

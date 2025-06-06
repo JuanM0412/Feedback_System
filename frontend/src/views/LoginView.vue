@@ -6,16 +6,16 @@
         <p class="text-gray-600 dark:text-gray-300">Accede a tu cuenta para continuar</p>
       </div>
 
-      <form @submit.prevent="handleLogin" class="space-y-6">
-        <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <span class="block sm:inline">{{ error }}</span>
+      <form @submit.prevent="login" class="space-y-6">
+        <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <span class="block sm:inline">{{ errorMessage }}</span>
         </div>
 
         <div>
           <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Correo Electrónico</label>
           <input
             id="email"
-            v-model="email"
+            v-model="credentials.email"
             type="email"
             required
             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
@@ -27,7 +27,7 @@
           <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contraseña</label>
           <input
             id="password"
-            v-model="password"
+            v-model="credentials.password"
             type="password"
             required
             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
@@ -66,16 +66,36 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuth } from '../services/AuthService';
-import axios from 'axios';
+import UserService from '../services/UserService';
+import { userStore } from '../store/userStore';
 
-const { login, error, loading } = useAuth();
 const router = useRouter();
 
-const email = ref('');
-const password = ref('');
+const credentials = ref({
+  email: '',
+  password: ''
+});
 
-const handleLogin = async () => {
-  await login(email.value, password.value);
+const loading = ref(false);
+const errorMessage = ref('');
+
+const login = async () => {
+  try {
+    loading.value = true;
+    errorMessage.value = '';
+
+    const response = await UserService.login({
+      email: credentials.value.email,
+      password: credentials.value.password
+    });
+    
+    userStore.handleAuthResponse(response);
+    await router.push('/');
+  } catch (error: unknown) {
+    errorMessage.value = error instanceof Error ? error.message : 'Ocurrió un error al iniciar sesión';
+    console.error('Login error:', error);
+  } finally {
+    loading.value = false;
+  }
 };
 </script>

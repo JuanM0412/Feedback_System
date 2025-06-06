@@ -5,12 +5,12 @@
         <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Descripción del Negocio</h1>
         <button 
           @click="saveBusiness"
-          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           :disabled="loading"
         >
           <span v-if="!loading">Guardar Cambios</span>
           <span v-else class="flex items-center">
-            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -19,15 +19,20 @@
         </button>
       </div>
 
-      <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-        {{ error }}
+      <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
+        <span class="block sm:inline">{{ errorMessage }}</span>
+      </div>
+
+      <div v-if="successMessage" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert">
+        <span class="block sm:inline">{{ successMessage }}</span>
       </div>
 
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
         <textarea
           v-model="businessContent"
-          class="w-full h-96 p-4 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+          class="w-full h-96 p-4 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-none"
           placeholder="Describe tu negocio, productos/servicios principales, y público objetivo..."
+          :disabled="loading"
         ></textarea>
       </div>
 
@@ -62,42 +67,80 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useAuth } from '../services/AuthService';
 import { useRouter } from 'vue-router';
+import UserService from '../services/UserService';
+import { userStore } from '../store/userStore';
 
 const router = useRouter();
-const { api, user, logout } = useAuth();
-const businessInfo = ref('');
+
+const businessContent = ref('');
 const loading = ref(false);
-const error = ref('');
+const errorMessage = ref('');
+const successMessage = ref('');
 
 const fetchBusinessInfo = async () => {
   try {
     loading.value = true;
-    error.value = '';
+    errorMessage.value = '';
     
-    // Verificación adicional del token
-    const token = localStorage.getItem('access_token');
-    if (!token) throw new Error('No token found');
+    const response = await UserService.getBusinessInfo();
+    businessContent.value = response.business_summary || '';
     
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    if (payload.exp * 1000 < Date.now()) {
-      throw new Error('Token expired');
+  } catch (error: unknown) {
+    console.error('Business info error:', error);
+    
+    if (error instanceof Error) {
+      // Si es un error de autenticación, redirigir al login
+      if (error.message.includes('401') || error.message.includes('token') || error.message.includes('unauthorized')) {
+        errorMessage.value = 'Sesión expirada. Redirigiendo al login...';
+        userStore.logout();
+        setTimeout(() => router.push('/login'), 2000);
+      } else {
+        errorMessage.value = error.message || 'Error al cargar la información del negocio';
+      }
+    } else {
+      errorMessage.value = 'Error al cargar la información del negocio';
+    }
+  } finally {
+    loading.value = false;
+  }
+};
+
+const saveBusiness = async () => {
+  try {
+    loading.value = true;
+    errorMessage.value = '';
+    successMessage.value = '';
+    
+    if (!businessContent.value.trim()) {
+      errorMessage.value = 'La descripción del negocio no puede estar vacía';
+      return;
     }
 
-    const response = await api.get('/business/info');
-    businessInfo.value = response.data?.business_summary || '';
+    await UserService.saveBusinessInfo({
+      business_summary: businessContent.value
+    });
     
-  } catch (err) {
-    console.error('Business info error:', err);
+    successMessage.value = 'Información del negocio guardada exitosamente';
     
-    if (err.response?.status === 401 || err.message.includes('token')) {
-      error.value = 'Session expired. Redirecting to login...';
-      logout();
-      router.push('/login');
+    // Limpiar el mensaje de éxito después de 3 segundos
+    setTimeout(() => {
+      successMessage.value = '';
+    }, 3000);
+    
+  } catch (error: unknown) {
+    console.error('Save business error:', error);
+    
+    if (error instanceof Error) {
+      if (error.message.includes('401') || error.message.includes('token') || error.message.includes('unauthorized')) {
+        errorMessage.value = 'Sesión expirada. Redirigiendo al login...';
+        userStore.logout();
+        setTimeout(() => router.push('/login'), 2000);
+      } else {
+        errorMessage.value = error.message || 'Error al guardar la información del negocio';
+      }
     } else {
-      error.value = err.response?.data?.detail || 
-                  'Failed to load business information';
+      errorMessage.value = 'Error al guardar la información del negocio';
     }
   } finally {
     loading.value = false;
@@ -105,8 +148,8 @@ const fetchBusinessInfo = async () => {
 };
 
 onMounted(() => {
-  // Verifica si el usuario está autenticado primero
-  if (!user.value) {
+  // Verificar si el usuario está autenticado
+  if (!userStore.isAuthenticated) {
     router.push('/login');
   } else {
     fetchBusinessInfo();

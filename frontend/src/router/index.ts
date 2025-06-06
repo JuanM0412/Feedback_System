@@ -4,6 +4,8 @@ import LoginView from '../views/LoginView.vue';
 import RegisterView from '../views/RegisterView.vue';
 import RubricaView from '../views/RubricaView.vue';
 import BusinessView from '../views/BusinessView.vue';
+import { userStore } from '../store/userStore'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -40,5 +42,16 @@ const router = createRouter({
   ]
 });
 
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = userStore.isAuthenticated;
+
+  if(to.meta.requiresAuth && !isAuthenticated) {
+    next('/login');
+  }else if((to.name === 'login' || to.name === 'register') && isAuthenticated) {
+    next('/');
+  }else {
+    next();
+  }
+})
 
 export default router;

@@ -6,36 +6,23 @@
         <p class="text-gray-600 dark:text-gray-300">Comienza a usar nuestro servicio</p>
       </div>
 
-      <!-- Mensaje de error mejorado -->
-      <div 
-        v-if="error" 
-        class="bg-red-50 border-l-4 border-red-500 p-4 mb-6"
-      >
-        <div class="flex">
-          <div class="flex-shrink-0">
-            <svg class="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-            </svg>
-          </div>
-          <div class="ml-3">
-            <p class="text-sm text-red-700">{{ error }}</p>
-          </div>
+      <form @submit.prevent="register" class="space-y-6">
+        <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <span class="block sm:inline">{{ errorMessage }}</span>
         </div>
-      </div>
 
-      <form @submit.prevent="handleRegister" class="space-y-4">
         <div>
           <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Correo Electrónico
           </label>
           <input
             id="email"
-            v-model="email"
+            v-model="userData.email"
             type="email"
             required
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-            placeholder="tú@email.com"
-          >
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+            placeholder="tu@email.com"
+          />
         </div>
 
         <div>
@@ -44,12 +31,12 @@
           </label>
           <input
             id="username"
-            v-model="username"
+            v-model="userData.username"
             type="text"
             required
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
             placeholder="nombredeusuario"
-          >
+          />
         </div>
 
         <div>
@@ -58,31 +45,29 @@
           </label>
           <input
             id="password"
-            v-model="password"
+            v-model="userData.password"
             type="password"
             required
             minlength="6"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
             placeholder="••••••••"
-          >
+          />
         </div>
 
         <div>
           <button
             type="submit"
             :disabled="loading"
-            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-75"
+            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <template v-if="!loading">
-              Registrarse
-            </template>
-            <template v-else>
-              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <span v-if="!loading">Registrarse</span>
+            <span v-else class="flex items-center">
+              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
               Registrando...
-            </template>
+            </span>
           </button>
         </div>
 
@@ -96,36 +81,56 @@
           </router-link>
         </div>
       </form>
-      <div v-if="error" class="error-message">
-    {{ error }}
-  </div>
     </div>
   </main>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useAuth } from '../services/AuthService';
-import axios from 'axios';
+import { useRouter } from 'vue-router';
+import UserService from '../services/UserService';
+import { userStore } from '../store/userStore';
 
-const { register, error, loading } = useAuth();
+const router = useRouter();
 
-const email = ref('');
-const username = ref('');
-const password = ref('');
+const userData = ref({
+  email: '',
+  username: '',
+  password: ''
+});
 
-const handleRegister = async () => {
-  // Validación básica
-  if (!email.value || !username.value || !password.value) {
-    error.value = 'Todos los campos son requeridos';
-    return;
+const loading = ref(false);
+const errorMessage = ref('');
+
+const register = async () => {
+  try {
+    loading.value = true;
+    errorMessage.value = '';
+
+    // Validación básica
+    if (!userData.value.email || !userData.value.username || !userData.value.password) {
+      errorMessage.value = 'Todos los campos son requeridos';
+      return;
+    }
+    
+    if (userData.value.password.length < 6) {
+      errorMessage.value = 'La contraseña debe tener al menos 6 caracteres';
+      return;
+    }
+
+    const response = await UserService.register({
+      email: userData.value.email,
+      username: userData.value.username,
+      password: userData.value.password
+    });
+    
+    userStore.handleAuthResponse(response);
+    await router.push('/');
+  } catch (error: unknown) {
+    errorMessage.value = error instanceof Error ? error.message : 'Ocurrió un error al registrarse';
+    console.error('Register error:', error);
+  } finally {
+    loading.value = false;
   }
-  
-  if (password.value.length < 6) {
-    error.value = 'La contraseña debe tener al menos 6 caracteres';
-    return;
-  }
-
-  await register(email.value, username.value, password.value);
 };
 </script>
