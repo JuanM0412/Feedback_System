@@ -9,7 +9,7 @@ class AnalysyssService:
     def __init__(self):
         pass
 
-    async def handle_audio_upload(self, file: UploadFile) -> dict:
+    async def handle_audio_upload(self, file: UploadFile, user: User) -> dict:
         if not file.content_type.startswith('audio/'):
             raise ValueError("El archivo debe ser de audio")
 
@@ -24,7 +24,8 @@ class AnalysyssService:
             file_id = upload_file_to_drive(
                 file_path=tmp_path,
                 file_name=file.filename,
-                mime_type=file.content_type
+                mime_type=file.content_type,
+                folder_id=user.folder_id
             )
 
             return {
@@ -39,7 +40,7 @@ class AnalysyssService:
     async def trigger_webhook(self, data: dict, user: User) -> None:
         data["evaluation_rubric"] = user.evaluation_rubric
         data["business_description"] = user.business_summary
-        print("Data to send to webhook:", data)
+        data["sheet_id"] = user.sheet_id
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(settings.MAKE_WEBHOOK_URL, json=data)

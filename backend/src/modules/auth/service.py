@@ -7,6 +7,7 @@ from src.modules.auth.schemas import UserCreate, UserInDB, UserUpdate
 from src.utils.security import get_password_hash, verify_password, create_access_token
 from src.core.database import get_db
 from src.core.config import settings
+from src.utils.google_drive import create_folder, create_sheet
 from datetime import timedelta
 
 class AuthService:
@@ -34,12 +35,21 @@ class AuthService:
         db_user = User(
             email=user.email,
             password=hashed_password,
-            username=user.username
+            username=user.username,
         )
         
         self.db.add(db_user)
         self.db.commit()
         self.db.refresh(db_user)
+
+        folder_id = create_folder(str(db_user.id), settings.FOLDER_ID)
+        sheet_id = create_sheet(str(db_user.username), folder_id)
+
+        db_user.folder_id = folder_id
+        db_user.sheet_id = sheet_id
+        self.db.commit()
+        self.db.refresh(db_user)
+
         return UserInDB.from_orm(db_user)
 
     def authenticate_user(self, email: str, password: str) -> Optional[User]:

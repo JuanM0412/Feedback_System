@@ -10,3 +10,5 @@ class User(Base):
     username = Column(String(100))
     evaluation_rubric = Column(Text)
     business_summary = Column(Text)
+    folder_id = Column(Text, nullable=True)
+    sheet_id = Column(Text, nullable=True)
