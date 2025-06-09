@@ -3,20 +3,46 @@
     <div class="max-w-4xl mx-auto">
       <div class="flex justify-between items-center mb-8">
         <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Rúbrica de Evaluación</h1>
-        <button 
-          @click="saveRubrica"
-          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          :disabled="loading"
-        >
-          <span v-if="!loading">Guardar Cambios</span>
-          <span v-else class="flex items-center">
-            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Guardando...
-          </span>
-        </button>
+        <div class="flex gap-2">
+          <button 
+            v-if="hasRubrica && !isEditing"
+            @click="enableEditing"
+            class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          >
+            Editar Rúbrica
+          </button>
+          <button 
+            @click="saveRubrica"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="loading || (hasRubrica && !isEditing)"
+          >
+            <span v-if="!loading">Guardar Cambios</span>
+            <span v-else class="flex items-center">
+              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Guardando...
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-2 dark:text-white">¿Qué es una Rúbrica de Evaluación?</h2>
+        <p class="text-gray-700 dark:text-gray-300 mb-4">
+          Una rúbrica de evaluación es una guía estructurada que define los criterios para analizar las llamadas telefónicas. 
+          La rúbrica es fundamental para:
+        </p>
+        <ul class="list-disc pl-5 text-gray-700 dark:text-gray-300 mb-4 space-y-1">
+          <li>Proporcionar contexto específico al modelo de lenguaje</li>
+          <li>Mejorar la precisión y relevancia del análisis</li>
+          <li>Establecer estándares consistentes para evaluar las interacciones</li>
+          <li>Enfocar el análisis en los aspectos más importantes para tu negocio</li>
+        </ul>
+        <p class="text-gray-700 dark:text-gray-300">
+          Cuanto más detallada y clara sea tu rúbrica, mejores resultados obtendrás del análisis automático.
+        </p>
       </div>
 
       <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
@@ -32,7 +58,7 @@
           v-model="rubricaContent"
           class="w-full h-96 p-4 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-none"
           placeholder="Escribe aquí tu rúbrica de evaluación..."
-          :disabled="loading"
+          :disabled="loading || (hasRubrica && !isEditing)"
         ></textarea>
       </div>
 
@@ -67,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import UserService from '../services/UserService';
 import { userStore } from '../store/userStore';
@@ -78,6 +104,15 @@ const rubricaContent = ref('');
 const loading = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
+const isEditing = ref(false);
+
+const hasRubrica = computed(() => {
+  return rubricaContent.value.trim().length > 0;
+});
+
+const enableEditing = () => {
+  isEditing.value = true;
+};
 
 const fetchRubrica = async () => {
   try {
@@ -86,6 +121,7 @@ const fetchRubrica = async () => {
     
     const response = await UserService.getRubrica();
     rubricaContent.value = response.evaluation_rubric || '';
+    isEditing.value = !hasRubrica.value;
     
   } catch (error: unknown) {
     console.error('Rubrica fetch error:', error);
@@ -122,6 +158,7 @@ const saveRubrica = async () => {
     });
     
     successMessage.value = 'Rúbrica de evaluación guardada exitosamente';
+    isEditing.value = false;
     
     // Limpiar el mensaje de éxito después de 3 segundos
     setTimeout(() => {
