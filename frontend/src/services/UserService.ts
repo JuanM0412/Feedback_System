@@ -6,11 +6,7 @@ import type { ApiErrorResponse } from '../interfaces/ApiErrorResponse';
 class UserService {
   async register(userData: UserCreate): Promise<AuthResponse> {
     try {
-      const response = await api.post<AuthResponse>('/auth/register', userData);
-      
-      if (!response.data?.data?.access_token) {
-        throw new Error(response.data?.message || 'Registration failed');
-      }
+      const response = await api.post<AuthResponse>('/auth/admin/create_user', userData);
       
       return response.data;
     } catch (error: unknown) {
@@ -37,8 +33,6 @@ class UserService {
           }
         }
       );
-
-      console.log('Login response:', response);
 
       return response.data;
     } catch (error: unknown) {
@@ -114,6 +108,19 @@ class UserService {
         throw new Error(errorData?.message || 'Error al obtener la descripción del negocio');
       }
       throw new Error('Unknown error while fetching business summary');
+    }
+  }
+
+  async getUsers(): Promise<any> {
+    try {
+      const response = await api.get('/auth/admin/users');
+      return response.data;
+    } catch (error: unknown) {
+      if (isAxiosError(error)) {
+        const errorData = error.response?.data as ApiErrorResponse;
+        throw new Error(errorData?.message || 'Error al obtener los usuarios');
+      }
+      throw new Error('Unknown error while fetching users');
     }
   }
 }

@@ -9,7 +9,7 @@ router = APIRouter(prefix="/analysis", tags=["analysis"])
 @router.post("/upload_audio/")
 async def upload_audio(request: Request, file: UploadFile = File(...), analysis_service: AnalysyssService = Depends(), current_user: User = Depends(get_current_user)):
     try:
-        result = await analysis_service.handle_audio_upload(file)
+        result = await analysis_service.handle_audio_upload(file, current_user)
         await analysis_service.trigger_webhook(result, current_user)
         return JSONResponse(content={
             "message": "Archivo subido exitosamente",

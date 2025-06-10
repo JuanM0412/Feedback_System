@@ -51,13 +51,6 @@
             </span>
           </button>
         </div>
-
-        <div class="text-center text-sm text-gray-600 dark:text-gray-400">
-          ¿No tienes una cuenta?
-          <router-link to="/register" class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
-            Regístrate aquí
-          </router-link>
-        </div>
       </form>
     </div>
   </main>
@@ -84,10 +77,7 @@ const login = async () => {
     loading.value = true;
     errorMessage.value = '';
 
-    const response = await UserService.login({
-      email: credentials.value.email,
-      password: credentials.value.password
-    });
+    const response = await UserService.login(credentials.value);
     
     userStore.handleAuthResponse(response);
     await router.push('/');

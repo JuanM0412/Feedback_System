@@ -22,6 +22,7 @@ def get_current_user(
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         email: str = payload.get("sub")
+        user_type: bool = payload.get("type")
         if email is None:
             raise credentials_exception
     except JWTError:
@@ -30,4 +31,14 @@ def get_current_user(
     user = db.query(User).filter(User.email == email).first()
     if user is None:
         raise credentials_exception
+    
+    user.type = user_type
     return user
+
+def get_current_admin_user(current_user: User = Depends(get_current_user)):
+    if not current_user.type:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required"
+        )
+    return current_user

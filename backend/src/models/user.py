@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String, Text, Boolean
 from src.core.database import Base
 
 class User(Base):
@@ -10,3 +10,6 @@ class User(Base):
     username = Column(String(100))
     evaluation_rubric = Column(Text)
     business_summary = Column(Text)
+    folder_id = Column(Text, nullable=True)
+    sheet_id = Column(Text, nullable=True)
+    type = Column(Boolean, default=False)

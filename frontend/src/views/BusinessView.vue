@@ -1,7 +1,7 @@
 <template>
   <main class="flex-grow w-full py-8 px-4 md:px-6 lg:px-8 mt-16">
-    <div class="max-w-4xl mx-auto">
-      <div class="flex justify-between items-center mb-8">
+    <div class="w-full">
+      <div class="flex justify-between items-center mb-8 px-4 md:px-6 lg:px-8">
         <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Descripción del Negocio</h1>
         <div class="flex gap-2">
           <button 
@@ -36,7 +36,7 @@
         </div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 mx-4 md:mx-6 lg:mx-8">
         <h2 class="text-xl font-semibold mb-2 dark:text-white">Importancia de la Descripción del Negocio</h2>
         <p class="text-gray-700 dark:text-gray-300 mb-4">
           Proporciona información clave sobre tu empresa para mejorar el análisis de llamadas:
@@ -49,46 +49,49 @@
         </ul>
       </div>
 
-      <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
+      <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6 mx-4 md:mx-6 lg:mx-8" role="alert">
         <span class="block sm:inline">{{ errorMessage }}</span>
       </div>
 
-      <div v-if="successMessage" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert">
+      <div v-if="successMessage" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6 mx-4 md:mx-6 lg:mx-8" role="alert">
         <span class="block sm:inline">{{ successMessage }}</span>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
-        <textarea
-          v-model="businessContent"
-          class="w-full h-96 p-4 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-none"
-          placeholder="Ejemplo: Nombre de empresa, sector, productos principales, público objetivo, procesos comerciales..."
-          :disabled="loading || (hasBusinessInfo && !isEditing)"
-        ></textarea>
-      </div>
+      <div class="flex flex-col lg:flex-row gap-6 mb-8 px-4 md:px-6 lg:px-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 w-full flex-1">
+          <h2 class="text-xl font-semibold mb-4 dark:text-white">Tu Descripción del Negocio</h2>
+          <textarea
+            v-model="businessContent"
+            class="w-full h-96 p-4 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-none"
+            placeholder="Ejemplo: Nombre de empresa, sector, productos principales, público objetivo, procesos comerciales..."
+            :disabled="loading || (hasBusinessInfo && !isEditing)"
+          ></textarea>
+        </div>
 
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        <h2 class="text-xl font-semibold mb-4 dark:text-white">Ejemplo de Estructura</h2>
-        <pre class="bg-gray-100 dark:bg-gray-700 p-4 rounded-md text-sm text-gray-800 dark:text-gray-300 overflow-x-auto">
-# TechSolutions Inc. - Desarrollo de Software
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex-1">
+          <h2 class="text-xl font-semibold mb-4 dark:text-white">Ejemplo</h2>
+          <pre class="bg-gray-100 dark:bg-gray-700 p-4 rounded-md text-sm text-gray-800 dark:text-gray-300 overflow-x-auto">
+TechSolutions Inc. - Desarrollo de Software
 
-**Sector:** Tecnología B2B
+Sector: Tecnología B2B
 
-**Productos principales:**
+Productos principales:
 - Software de gestión empresarial
 - Soluciones de automatización
 - Plataforma de análisis de datos
 
-**Clientes ideales:**
+Clientes ideales:
 - Empresas medianas (50-500 empleados)
 - Sectores: manufactura, logística
 - Departamentos: Operaciones, TI
 
-**Procesos clave:**
+Procesos clave:
 1. Demostración del producto
 2. Prueba gratuita de 30 días
 3. Implementación guiada
 4. Soporte continuo
-        </pre>
+          </pre>
+        </div>
       </div>
     </div>
   </main>
