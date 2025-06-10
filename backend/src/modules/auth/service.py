@@ -34,8 +34,9 @@ class AuthService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email already registered"
             )
-        
+
         hashed_password = get_password_hash(user.password)
+        
         db_user = User(
             email=user.email,
             password=hashed_password,
@@ -43,27 +44,27 @@ class AuthService:
             type=user.type,
             state=user.state
         )
-        
-        self.db.add(db_user)
-        self.db.commit()
-        self.db.refresh(db_user)
 
-        if not user.type:
-            try:
+        try:
+            self.db.add(db_user)
+            self.db.flush()
+            
+            if not user.type:
                 folder_id = create_folder(str(db_user.id), settings.FOLDER_ID)
                 sheet_id = create_sheet(str(db_user.username), folder_id)
-
                 db_user.folder_id = folder_id
                 db_user.sheet_id = sheet_id
-                self.db.commit()
-                self.db.refresh(db_user)
-            except Exception as e:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail=str(e)
-                )
 
-        return UserInDB.from_orm(db_user)
+            self.db.commit()
+            self.db.refresh(db_user)
+            return UserInDB.from_orm(db_user)
+
+        except Exception as e:
+            self.db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"User creation failed: {str(e)}"
+            )
 
     def authenticate_user(self, email: str, password: str) -> Optional[User]:
         user = self.get_user_by_email(email)
