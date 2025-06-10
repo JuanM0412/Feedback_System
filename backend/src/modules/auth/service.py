@@ -19,6 +19,10 @@ class AuthService:
         if db_user is None:
             return None
         return UserInDB.from_orm(db_user)
+    
+    def get_users(self) -> list[UserInDB]:
+        db_users = self.db.query(User).all()
+        return [UserInDB.from_orm(user) for user in db_users]
 
     def get_user_by_email(self, email: str) -> Optional[User]:
         return self.db.query(User).filter(User.email == email).first()
@@ -36,19 +40,21 @@ class AuthService:
             email=user.email,
             password=hashed_password,
             username=user.username,
+            type=user.type,
         )
         
         self.db.add(db_user)
         self.db.commit()
         self.db.refresh(db_user)
 
-        folder_id = create_folder(str(db_user.id), settings.FOLDER_ID)
-        sheet_id = create_sheet(str(db_user.username), folder_id)
+        if not user.type:
+            folder_id = create_folder(str(db_user.id), settings.FOLDER_ID)
+            sheet_id = create_sheet(str(db_user.username), folder_id)
 
-        db_user.folder_id = folder_id
-        db_user.sheet_id = sheet_id
-        self.db.commit()
-        self.db.refresh(db_user)
+            db_user.folder_id = folder_id
+            db_user.sheet_id = sheet_id
+            self.db.commit()
+            self.db.refresh(db_user)
 
         return UserInDB.from_orm(db_user)
 
@@ -63,14 +69,20 @@ class AuthService:
     def create_access_token_for_user(self, user: User):
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
-            data={"sub": user.email}, expires_delta=access_token_expires
+            data={
+                "sub": user.email,
+                "type": user.type
+            }, expires_delta=access_token_expires
         )
         return access_token
     
     def create_refresh_token_for_user(self, user: User):
         refresh_token_expires = timedelta(days=settings.REFRESH_TOKEN_FOR_USER)
         return create_access_token(
-            data={"sub": user.email}, expires_delta=refresh_token_expires
+            data={
+                "sub": user.email,
+                "type": user.type
+            }, expires_delta=refresh_token_expires
         )
 
     def update_user(self, user_id: int, user_update: UserUpdate) -> Optional[UserInDB]:

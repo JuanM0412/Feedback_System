@@ -3,6 +3,7 @@ from pydantic import BaseModel, EmailStr
 class UserBase(BaseModel):
     email: EmailStr
     username: str
+    type: bool
 
 class UserCreate(UserBase):
     password: str
@@ -30,3 +31,4 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     email: str | None = None
+    type: bool | None = None

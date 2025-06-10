@@ -6,6 +6,7 @@ import RegisterView from '../views/RegisterView.vue';
 import RubricaView from '../views/RubricaView.vue';
 import BusinessView from '../views/BusinessView.vue';
 import { userStore } from '../store/userStore'
+import UsersView from '../views/UsersView.vue';
 
 
 const router = createRouter({
@@ -28,10 +29,16 @@ const router = createRouter({
       meta: { requiresAuth: false }
     },
     {
-      path: '/register',
-      name: 'register',
+      path: '/admin/create_user',
+      name: 'create_user',
       component: RegisterView,
-      meta: { requiresAuth: false }
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/admin/users',
+      name: 'users',
+      component: UsersView,
+      meta: { requiresAuth: true }
     },
     {
       path: '/rubrica',

@@ -11,7 +11,7 @@
           <button
             @click="handleLogout"
             :disabled="loading"
-            class="bg-gradient-to-r from-blue-600 to-blue-800 text-white dark:text-white-300 hover:text-white-700 dark:hover:text-blue-500 font-medium rounded-lg text-sm px-4 py-2 text-center transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="bg-gradient-to-r from-blue-600 to-blue-800 text-white hover:bg-blue-700 font-medium rounded-lg text-sm px-4 py-2 text-center transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span v-if="!loading">Cerrar Sesión</span>
             <span v-else class="flex items-center">
@@ -29,12 +29,6 @@
             class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
           >
             Iniciar Sesión
-          </router-link>
-          <router-link
-            to="/register"
-            class="text-blue-700 bg-white hover:bg-gray-100 border border-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-gray-900 dark:text-blue-500 dark:border-blue-500 dark:hover:bg-gray-800 dark:hover:text-white dark:focus:ring-blue-800"
-          >
-            Registrarse
           </router-link>
         </template>
         <button
@@ -55,30 +49,48 @@
           class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700"
         >
           <template v-if="isAuthenticated">
-            <li>
-              <router-link
-                to="/rubrica"
-                class="block py-2 px-3 rounded text-gray-900 hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                active-class="text-blue-700 md:text-blue-700 dark:text-blue-500"
-                @click="closeMobileMenu"
-              >Rúbrica</router-link>
-            </li>
-            <li>
-              <router-link
-                to="/business"
-                class="block py-2 px-3 rounded text-gray-900 hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                active-class="text-blue-700 md:text-blue-700 dark:text-blue-500"
-                @click="closeMobileMenu"
-              >Negocio</router-link>
-            </li>
-            <li>
-              <router-link
-                to="/upload_file"
-                class="block py-2 px-3 rounded text-gray-900 hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                active-class="text-blue-700 md:text-blue-700 dark:text-blue-500"
-                @click="closeMobileMenu"
-              >Analizar Llamada</router-link>
-            </li>
+            <template v-if="!isAdmin">
+              <li>
+                <router-link
+                  to="/rubrica"
+                  class="block py-2 px-3 rounded text-gray-900 hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+                  active-class="text-blue-700 md:text-blue-700 dark:text-blue-500"
+                  @click="closeMobileMenu"
+                >Rúbrica</router-link>
+              </li>
+              <li>
+                <router-link
+                  to="/business"
+                  class="block py-2 px-3 rounded text-gray-900 hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+                  active-class="text-blue-700 md:text-blue-700 dark:text-blue-500"
+                  @click="closeMobileMenu"
+                >Negocio</router-link>
+              </li>
+              <li>
+                <router-link
+                  to="/upload_file"
+                  class="block py-2 px-3 rounded text-gray-900 hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+                  active-class="text-blue-700 md:text-blue-700 dark:text-blue-500"
+                  @click="closeMobileMenu"
+                >Analizar Llamada</router-link>
+              </li>
+            </template>
+            <template v-else>
+              <li>
+                <router-link
+                  to="/admin/users"
+                  class="block py-2 px-3 rounded text-gray-900 hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+                  @click="closeMobileMenu"
+                >Ver Usuarios</router-link>
+              </li>
+              <li>
+                <router-link
+                  to="/admin/create_user"
+                  class="block py-2 px-3 rounded text-gray-900 hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+                  @click="closeMobileMenu"
+                >Crear Usuario</router-link>
+              </li>
+            </template>
           </template>
           <template v-else>
             <li>
@@ -127,6 +139,8 @@ const loading = ref(false);
 const showMobileMenu = ref(false);
 
 const isAuthenticated = computed(() => userStore.isAuthenticated);
+const isAdmin = computed(() => userStore.type === true);
+console.log('User type from store:', userStore.type, typeof userStore.type);
 
 const handleLogout = async () => {
   try {

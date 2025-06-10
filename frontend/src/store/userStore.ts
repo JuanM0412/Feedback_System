@@ -7,6 +7,7 @@ const state = reactive({
   user: JSON.parse(sessionStorage.getItem('user') || 'null') as UserResponse | null,
   access_token: sessionStorage.getItem('access_token') || '',
   refresh_token: sessionStorage.getItem('refresh_token') || '',
+  type: sessionStorage.getItem('type') ? JSON.parse(sessionStorage.getItem('type')!) : false,
 });
 
 watch(
@@ -22,6 +23,13 @@ watch(
 );
 
 watch(
+  () => state.type,
+  (newValue) => {
+    sessionStorage.setItem('type', JSON.stringify(newValue));
+  }
+);
+
+watch(
   () => state.access_token,
   (newValue) => {
     if (newValue) {
@@ -32,9 +40,24 @@ watch(
   }
 );
 
+watch(
+  () => state.refresh_token,
+  (newValue) => {
+    if (newValue) {
+      sessionStorage.setItem('refresh_token', newValue);
+    } else {
+      sessionStorage.removeItem('refresh_token');
+    }
+  }
+);
+
 export const userStore = {
   get user(): UserResponse | null {
     return state.user;
+  },
+
+  get type(): boolean {
+    return state.type;
   },
 
   get access_token(): string {
@@ -51,6 +74,10 @@ export const userStore = {
 
   setUser(user: UserResponse): void {
     state.user = user;
+  },
+
+  setType(type: boolean): void {
+    state.type = type;
   },
 
   setTokens(access_token: string, refresh_token: string): void {
@@ -83,6 +110,10 @@ export const userStore = {
 
     if (response.data?.access_token && response.data?.refresh_token) {
       this.setTokens(response.data.access_token, response.data.refresh_token);
+    }
+
+    if (response.data?.type !== undefined) {
+      this.setType(response.data.type);
     }
   },
 

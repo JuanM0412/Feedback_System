@@ -5,17 +5,14 @@ from fastapi.responses import JSONResponse
 from src.models.user import User
 from src.modules.auth.schemas import UserCreate, UserInDB, UserUpdate, Token
 from src.modules.auth.service import AuthService
-from src.modules.auth.dependencies import get_current_user
-from src.core.database import get_db
+from src.modules.auth.dependencies import get_current_user, get_current_admin_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-@router.post("/register")
-def register(user: UserCreate, auth_service: AuthService = Depends()):
+@router.post("/admin/create_user")
+def register(user: UserCreate, auth_service: AuthService = Depends(), current_user: User = Depends(get_current_admin_user)):
     try:
         db_user = auth_service.create_user(user)
-        access_token = auth_service.create_access_token_for_user(db_user)
-        refresh_token = auth_service.create_refresh_token_for_user(db_user)
 
         return JSONResponse(
             status_code=201,
@@ -23,9 +20,6 @@ def register(user: UserCreate, auth_service: AuthService = Depends()):
                 "status": "success",
                 "message": "User registered successfully",
                 "data": {
-                    "access_token": access_token,
-                    "refresh_token": refresh_token,
-                    "token_type": "bearer",
                     "user": db_user.dict()
                 }
             }
@@ -35,6 +29,13 @@ def register(user: UserCreate, auth_service: AuthService = Depends()):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
+    
+@router.get("/admin/users")
+def get_users(auth_service: AuthService = Depends(), current_user: User = Depends(get_current_admin_user)):
+    users = auth_service.get_users()
+    if not users:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No users found")
+    return users
 
 @router.post("/token", response_model=Token)
 def login_for_access_token(
@@ -50,6 +51,9 @@ def login_for_access_token(
         )
     access_token = auth_service.create_access_token_for_user(user)
     refresh_token = auth_service.create_refresh_token_for_user(user)
+    print(f"Access Token: {access_token}")
+    print(f"Refresh Token: {refresh_token}")
+    print(f"User Type: {user.type}")
     return JSONResponse(
             status_code=201,
             content={
@@ -58,8 +62,9 @@ def login_for_access_token(
                 "data": {
                     "access_token": access_token,
                     "refresh_token": refresh_token,
+                    "type": user.type,
                     "token_type": "bearer"
-                }
+                },
             }
         )
 

@@ -1,7 +1,7 @@
 <template>
   <main class="flex-grow w-full py-8 px-4 md:px-6 lg:px-8 mt-16">
-    <div class="max-w-4xl mx-auto">
-      <div class="flex justify-between items-center mb-8">
+    <div class="w-full">
+      <div class="flex justify-between items-center mb-8 px-4 md:px-6 lg:px-8">
         <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Rúbrica de Evaluación</h1>
         <div class="flex gap-2">
           <button 
@@ -28,10 +28,10 @@
         </div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 mx-4 md:mx-6 lg:mx-8">
         <h2 class="text-xl font-semibold mb-2 dark:text-white">¿Qué es una Rúbrica de Evaluación?</h2>
         <p class="text-gray-700 dark:text-gray-300 mb-4">
-          Una rúbrica de evaluación es una guía estructurada que define los criterios para analizar las llamadas telefónicas. 
+          Una rúbrica de evaluación es una guía estructurada que define los criterios para evaluar las llamadas telefónicas. 
           La rúbrica es fundamental para:
         </p>
         <ul class="list-disc pl-5 text-gray-700 dark:text-gray-300 mb-4 space-y-1">
@@ -45,48 +45,49 @@
         </p>
       </div>
 
-      <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
+      <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6 mx-4 md:mx-6 lg:mx-8" role="alert">
         <span class="block sm:inline">{{ errorMessage }}</span>
       </div>
 
-      <div v-if="successMessage" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert">
+      <div v-if="successMessage" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6 mx-4 md:mx-6 lg:mx-8" role="alert">
         <span class="block sm:inline">{{ successMessage }}</span>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
-        <textarea
-          v-model="rubricaContent"
-          class="w-full h-96 p-4 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-none"
-          placeholder="Escribe aquí tu rúbrica de evaluación..."
-          :disabled="loading || (hasRubrica && !isEditing)"
-        ></textarea>
-      </div>
+      <div class="flex flex-col lg:flex-row gap-6 mb-8 px-4 md:px-6 lg:px-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 w-full flex-1">
+          <h2 class="text-xl font-semibold mb-4 dark:text-white">Tu Rúbrica</h2>
+          <textarea
+            v-model="rubricaContent"
+            class="w-full h-96 p-4 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-none"
+            placeholder="Escribe aquí tu rúbrica de evaluación..."
+            :disabled="loading || (hasRubrica && !isEditing)"
+          ></textarea>
+        </div>
 
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        <h2 class="text-xl font-semibold mb-4 dark:text-white">Ejemplo de Estructura</h2>
-        <pre class="bg-gray-100 dark:bg-gray-700 p-4 rounded-md text-sm text-gray-800 dark:text-gray-300 overflow-x-auto">
-# Rúbrica de Evaluación de Llamadas
-
-## 1. Presentación (20%)
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex-1">
+          <h2 class="text-xl font-semibold mb-4 dark:text-white">Ejemplo de Estructura</h2>
+          <pre class="bg-gray-100 dark:bg-gray-700 p-4 rounded-md text-sm text-gray-800 dark:text-gray-300 overflow-x-auto">
+1. Presentación (20%)
 - Saludo profesional
 - Identificación clara
 - Objetivo de la llamada
 
-## 2. Detección de Necesidades (30%)
+2. Detección de Necesidades (30%)
 - Preguntas abiertas
 - Escucha activa
 - Confirmación de entendimiento
 
-## 3. Argumentación (30%)
+3. Argumentación (30%)
 - Beneficios claros
 - Objeciones manejadas
 - Adaptación al cliente
 
-## 4. Cierre (20%)
+4. Cierre (20%)
 - Resumen de beneficios
 - Llamada a la acción
 - Despedida adecuada
-        </pre>
+          </pre>
+        </div>
       </div>
     </div>
   </main>
