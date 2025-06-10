@@ -14,6 +14,7 @@
               <th class="px-4 py-3 border-b dark:border-gray-600">Rol</th>
               <th class="px-4 py-3 border-b dark:border-gray-600">Estado</th>
               <th class="px-4 py-3 border-b dark:border-gray-600">Acciones</th>
+
             </tr>
           </thead>
           <tbody>
@@ -25,7 +26,21 @@
               <td class="px-4 py-3 text-gray-900 dark:text-white">{{ user.username }}</td>
               <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ user.email }}</td>
               <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
-                {{ user.type === true ? 'Administrador' : 'Usuario' }}
+                {{ user.type ? 'Administrador' : 'Usuario' }}
+              </td>
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+                {{ user.state ? 'Activo' : 'Inactivo' }}
+              </td>
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+                <button
+                  class="px-3 py-1 text-sm rounded-md font-medium transition-colors duration-200"
+                  :class="user.state
+                    ? 'bg-red-500 text-white hover:bg-red-600'
+                    : 'bg-green-500 text-white hover:bg-green-600'"
+                  @click="toggleUserState(user)"
+                >
+                  {{ user.state ? 'Desactivar' : 'Activar' }}
+                </button>
               </td>
             </tr>
           </tbody>
@@ -55,6 +70,19 @@ const fetchUsers = async () => {
     users.value = response;
   } catch (err) {
     console.error('Error cargando usuarios:', err);
+  }
+};
+
+const toggleUserState = async (user: UserResponse) => {
+  try {
+    if (user.state) {
+      await UserService.deactivateUserById(user.id.toString());
+    } else {
+      await UserService.activateUserById(user.id.toString());
+    }
+    await fetchUsers();
+  } catch (error) {
+    console.error('Error cambiando estado del usuario:', error);
   }
 };
 

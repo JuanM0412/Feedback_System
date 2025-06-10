@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from src.models.user import User
 from src.modules.auth.schemas import UserCreate, UserInDB, UserUpdate, Token
 from src.modules.auth.service import AuthService
-from src.modules.auth.dependencies import get_current_user, get_current_admin_user
+from src.modules.auth.dependencies import get_current_user, get_current_admin_user, get_current_user_state
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -40,7 +40,7 @@ def get_users(auth_service: AuthService = Depends(), current_user: User = Depend
 @router.post("/token", response_model=Token)
 def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    auth_service: AuthService = Depends()
+    auth_service: AuthService = Depends(),
 ):
     user = auth_service.authenticate_user(form_data.username, form_data.password)
     if not user:
@@ -63,29 +63,41 @@ def login_for_access_token(
                     "access_token": access_token,
                     "refresh_token": refresh_token,
                     "type": user.type,
+                    "state": user.state,
                     "token_type": "bearer"
                 },
             }
         )
 
 @router.get("/me", response_model=UserInDB)
-def read_users_me(current_user: User = Depends(get_current_user)):
+def read_users_me(current_user: User = Depends(get_current_user), user_state: User = Depends(get_current_user_state)):
     return current_user
 
 @router.put("/me", response_model=UserInDB)
 def update_user_me(
     user_update: UserUpdate,
     current_user: User = Depends(get_current_user),
-    auth_service: AuthService = Depends()
+    auth_service: AuthService = Depends(),
+    user_state: User = Depends(get_current_user_state)
 ):
     return auth_service.update_user(current_user.id, user_update)
 
-@router.delete("/me")
-def delete_user_me(
-    current_user: User = Depends(get_current_user),
-    auth_service: AuthService = Depends()
+@router.put("/admin/users/{user_id}")
+def update_user_state(
+    user_id: int,
+    user_update: UserUpdate,
+    auth_service: AuthService = Depends(),
+    current_user: User = Depends(get_current_admin_user)
 ):
-    success = auth_service.delete_user(current_user.id)
-    if not success:
+    updated_user = auth_service.update_user(user_id, user_update)
+    if updated_user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return {"message": "User deleted successfully"}
+    
+    return JSONResponse(
+        status_code=200,
+        content={
+            "status": "success",
+            "message": f"User {'activated' if user_update.state else 'deactivated'} successfully",
+            "data": updated_user.dict()
+        }
+    )

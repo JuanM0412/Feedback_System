@@ -1,9 +1,12 @@
 from pydantic import BaseModel, EmailStr
+from typing import Optional
+
 
 class UserBase(BaseModel):
     email: EmailStr
     username: str
     type: bool
+    state: Optional[bool] = None
 
 class UserCreate(UserBase):
     password: str
@@ -14,6 +17,7 @@ class UserUpdate(BaseModel):
     business_summary: str | None = None
     folder_id: str | None = None
     sheet_id: str | None = None
+    state: bool | None = None
 
 class UserInDB(UserBase):
     id: int
@@ -32,3 +36,4 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     email: str | None = None
     type: bool | None = None
+    state: bool | None = None

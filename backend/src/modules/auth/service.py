@@ -41,6 +41,7 @@ class AuthService:
             password=hashed_password,
             username=user.username,
             type=user.type,
+            state=user.state
         )
         
         self.db.add(db_user)
@@ -48,13 +49,19 @@ class AuthService:
         self.db.refresh(db_user)
 
         if not user.type:
-            folder_id = create_folder(str(db_user.id), settings.FOLDER_ID)
-            sheet_id = create_sheet(str(db_user.username), folder_id)
+            try:
+                folder_id = create_folder(str(db_user.id), settings.FOLDER_ID)
+                sheet_id = create_sheet(str(db_user.username), folder_id)
 
-            db_user.folder_id = folder_id
-            db_user.sheet_id = sheet_id
-            self.db.commit()
-            self.db.refresh(db_user)
+                db_user.folder_id = folder_id
+                db_user.sheet_id = sheet_id
+                self.db.commit()
+                self.db.refresh(db_user)
+            except Exception as e:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=str(e)
+                )
 
         return UserInDB.from_orm(db_user)
 
@@ -71,7 +78,8 @@ class AuthService:
         access_token = create_access_token(
             data={
                 "sub": user.email,
-                "type": user.type
+                "type": user.type,
+                "state": user.state
             }, expires_delta=access_token_expires
         )
         return access_token
@@ -81,7 +89,8 @@ class AuthService:
         return create_access_token(
             data={
                 "sub": user.email,
-                "type": user.type
+                "type": user.type,
+                "state": user.state
             }, expires_delta=refresh_token_expires
         )
 
@@ -97,12 +106,3 @@ class AuthService:
         self.db.commit()
         self.db.refresh(db_user)
         return UserInDB.from_orm(db_user)
-
-    def delete_user(self, user_id: int) -> bool:
-        db_user = self.db.query(User).filter(User.id == user_id).first()
-        if db_user is None:
-            return False
-        
-        self.db.delete(db_user)
-        self.db.commit()
-        return True

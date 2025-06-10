@@ -33,7 +33,7 @@ class UserService {
           }
         }
       );
-
+      console.log("Data",response.data)
       return response.data;
     } catch (error: unknown) {
       if (isAxiosError(error)) {
@@ -108,6 +108,32 @@ class UserService {
         throw new Error(errorData?.message || 'Error al obtener la descripción del negocio');
       }
       throw new Error('Unknown error while fetching business summary');
+    }
+  }
+
+  async activateUserById(userId: string): Promise<any> {
+    try {
+      const response = await api.put(`/auth/admin/users/${userId}`, { state: true });
+      return response.data;
+    } catch (error: unknown) {
+      if (isAxiosError(error)) {
+        const errorData = error.response?.data as ApiErrorResponse;
+        throw new Error(errorData?.message || 'Error al activar el usuario');
+      }
+      throw new Error('Unknown error while activating user');
+    }
+  }
+
+  async deactivateUserById(userId: string): Promise<any> {
+    try {
+      const response = await api.put(`/auth/admin/users/${userId}`, { state: false });
+      return response.data;
+    } catch (error: unknown) {
+      if (isAxiosError(error)) {
+        const errorData = error.response?.data as ApiErrorResponse;
+        throw new Error(errorData?.message || 'Error al desactivar el usuario');
+      }
+      throw new Error('Unknown error while deactivating user');
     }
   }
 

@@ -8,6 +8,7 @@ const state = reactive({
   access_token: sessionStorage.getItem('access_token') || '',
   refresh_token: sessionStorage.getItem('refresh_token') || '',
   type: sessionStorage.getItem('type') ? JSON.parse(sessionStorage.getItem('type')!) : false,
+  State: sessionStorage.getItem('State') ? JSON.parse(sessionStorage.getItem('State')!) : false,
 });
 
 watch(
@@ -26,6 +27,13 @@ watch(
   () => state.type,
   (newValue) => {
     sessionStorage.setItem('type', JSON.stringify(newValue));
+  }
+);
+
+watch(
+  () => state.State,
+  (newValue) => {
+    sessionStorage.setItem('State', JSON.stringify(newValue));
   }
 );
 
@@ -60,6 +68,10 @@ export const userStore = {
     return state.type;
   },
 
+  get user_state(): boolean {
+    return state.State;
+  },
+
   get access_token(): string {
     return state.access_token;
   },
@@ -78,6 +90,10 @@ export const userStore = {
 
   setType(type: boolean): void {
     state.type = type;
+  },
+
+  setUserState(State: boolean): void {
+    state.State = State;
   },
 
   setTokens(access_token: string, refresh_token: string): void {
@@ -114,6 +130,10 @@ export const userStore = {
 
     if (response.data?.type !== undefined) {
       this.setType(response.data.type);
+    }
+
+    if (response.data?.state !== undefined) {
+      this.setUserState(response.data.state);
     }
   },
 

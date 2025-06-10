@@ -13,3 +13,4 @@ class User(Base):
     folder_id = Column(Text, nullable=True)
     sheet_id = Column(Text, nullable=True)
     type = Column(Boolean, default=False)
+    state = Column(Boolean, default=True)

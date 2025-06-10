@@ -10,12 +10,14 @@
           Solución integral para transcribir, analizar y mejorar el desempeño de tus agentes de ventas
         </p>
         <template v-if="isAuthenticated">
-          <router-link
-            to="/upload_file"
-            class="bg-gradient-to-r from-blue-600 to-blue-800 text-white hover:from-blue-700 hover:to-blue-900 font-medium rounded-lg px-6 py-3 text-lg border-2 border-white transition-colors"
-          >
-            Analizar Llamada
-          </router-link>
+          <template v-if="!isAdmin">
+            <router-link
+              to="/upload_file"
+              class="bg-gradient-to-r from-blue-600 to-blue-800 text-white hover:from-blue-700 hover:to-blue-900 font-medium rounded-lg px-6 py-3 text-lg border-2 border-white transition-colors"
+            >
+              Analizar Llamada
+            </router-link>
+          </template>
         </template>
         <template v-else>
           <div class="flex justify-center gap-4 mt-6">
@@ -192,4 +194,5 @@ import { computed } from 'vue';
 import { userStore } from '../store/userStore';
 
 const isAuthenticated = computed(() => userStore.isAuthenticated);
+const isAdmin = computed(() => userStore.type === true);
 </script>

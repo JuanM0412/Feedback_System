@@ -18,6 +18,7 @@ export interface AuthResponse {
     refresh_token: string;
     token_type: string;
     type: boolean;
+    state: boolean;
     user: UserResponse;
   };
 }

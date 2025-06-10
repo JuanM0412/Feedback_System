@@ -3,6 +3,7 @@ export interface User {
   email: string;
   username: string;
   type: boolean;
+  state: boolean;
   evaluation_rubric?: string | null;
   business_summary?: string | null;
 }
@@ -18,6 +19,7 @@ export interface UserResponse extends User{
   email: string;
   username: string;
   type: boolean;
+  state: boolean;
   evaluation_rubric?: string 
   business_summary?: string
 }
