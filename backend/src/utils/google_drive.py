@@ -3,6 +3,7 @@ from pathlib import Path
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+from fastapi import HTTPException
 from googleapiclient.http import MediaFileUpload
 
 from src.core.config import settings
@@ -48,20 +49,26 @@ def upload_file_to_drive(file_path: str, file_name: str,
 
 
 def share_with_user(folder_id: str, email: str):
-    service = get_drive_service()
+    try:
+        service = get_drive_service()
 
-    permission = {
-        'type': 'user',
-        'role': 'reader',
-        'emailAddress': email
-    }
+        permission = {
+            'type': 'user',
+            'role': 'reader',
+            'emailAddress': email
+        }
 
-    service.permissions().create(
-        fileId=folder_id,
-        body=permission,
-        fields='id',
-        sendNotificationEmail=True
-    ).execute()
+        service.permissions().create(
+            fileId=folder_id,
+            body=permission,
+            fields='id',
+            sendNotificationEmail=True
+        ).execute()
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error sharing folder with user {email}. User must have a Google account."
+        )
 
 
 def create_folder(folder_name: str, parent_folder_id: str = None,
