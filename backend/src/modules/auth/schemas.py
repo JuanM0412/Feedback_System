@@ -1,5 +1,6 @@
-from pydantic import BaseModel, EmailStr
 from typing import Optional
+
+from pydantic import BaseModel, EmailStr
 
 
 class UserBase(BaseModel):
@@ -8,8 +9,10 @@ class UserBase(BaseModel):
     type: bool
     state: Optional[bool] = None
 
+
 class UserCreate(UserBase):
     password: str
+
 
 class UserUpdate(BaseModel):
     username: str | None = None
@@ -18,6 +21,7 @@ class UserUpdate(BaseModel):
     folder_id: str | None = None
     sheet_id: str | None = None
     state: bool | None = None
+
 
 class UserInDB(UserBase):
     id: int
@@ -29,9 +33,11 @@ class UserInDB(UserBase):
     class Config:
         from_attributes = True
 
+
 class Token(BaseModel):
     access_token: str
     token_type: str
+
 
 class TokenData(BaseModel):
     email: str | None = None

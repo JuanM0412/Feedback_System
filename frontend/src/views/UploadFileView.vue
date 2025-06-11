@@ -41,7 +41,12 @@
           </div>
         </div>
 
-        <p v-if="uploadSuccess" class="mt-4 text-green-600 dark:text-green-400 font-medium">¡Archivo subido correctamente!</p>
+        <div v-if="uploadSuccess" class="mt-4 text-green-600 dark:text-green-400 font-medium">
+          <p>¡Archivo subido correctamente!</p>
+          <p class="mt-1 text-sm text-gray-800 dark:text-gray-300">
+            La llamada está siendo analizada. En unos momentos podrás ver el análisis en Drive.
+          </p>
+        </div>
         <p v-if="uploadError" class="mt-4 text-red-600 dark:text-red-400 font-medium">Error: {{ uploadError }}</p>
       </div>
     </div>
