@@ -114,7 +114,7 @@ def create_sheet(sheet_name: str, folder_id: str):
     sheets_service = get_sheets_service()
 
     values = [
-        ["Fecha", "Llamada", "Sentimiento", "Recomendaciones", "Análisis"]
+        ["Fecha", "Llamada", "Sentimiento", "Recomendaciones", "Análisis", "Evaluación"]
     ]
 
     body = {
